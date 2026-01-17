@@ -1,25 +1,33 @@
-from typing import List
-
 import torch
 import torch.nn as nn
 
 
 class MLP(nn.Module):
-    def __init__(
-        self,
-        input_shape: List[int],
-        hidden_units: List[int],
-        num_classes: int = 2,
-        dropout_rate: float = 0.2,
-    ):
+    def __init__(self, input_shape, hidden_units, num_classes):
         super().__init__()
-        
-        # TODO: Build the MLP architecture
-        # If you are up to the task, explore other architectures or model types
-        # Hint: Flatten -> [Linear -> ReLU -> Dropout] * N_layers -> Linear
-        
-        pass
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        # TODO: Implement forward pass
-        pass
+        # Calculate flattened input dimension
+        input_dim = 1
+        for d in input_shape:
+            input_dim *= d
+
+        layers = []
+        prev_dim = input_dim
+
+        for h in hidden_units:
+            layers.append(nn.Linear(prev_dim, h))
+            layers.append(nn.ReLU())
+            prev_dim = h
+
+        layers.append(nn.Linear(prev_dim, num_classes))
+
+        # Register layers properly
+        self.net = nn.Sequential(*layers)
+
+    def forward(self, x):
+        # Flatten input
+        x = x.view(x.size(0), -1)
+
+        # IMPORTANT: return output
+        return self.net(x)
+

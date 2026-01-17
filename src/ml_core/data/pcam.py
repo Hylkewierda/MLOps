@@ -6,32 +6,38 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset
 
-
 class PCAMDataset(Dataset):
-    """
-    PatchCamelyon (PCAM) Dataset reader for H5 format.
-    """
+    def __init__(self, x_path: str, y_path: str):
+        self.x_path = x_path
+        self.y_path = y_path
 
-    def __init__(self, x_path: str, y_path: str, transform: Optional[Callable] = None):
-        self.x_path = Path(x_path)
-        self.y_path = Path(y_path)
-        self.transform = transform
+        # We openen hier NIET de bestanden (lazy loading)
+        with h5py.File(self.x_path, "r") as f:
+            self.length = f["x"].shape[0]
 
-        # TODO: Initialize dataset
-        # 1. Check if files exist
-        # 2. Open h5 files in read mode
-        pass
+    def __len__(self):
+        return self.length
 
-    def __len__(self) -> int:
-        # TODO: Return length of dataset
-        # The dataloader will know hence how many batches to create
-        return 0
+    def __getitem__(self, idx):
+        # Lazy open per access (Snellius-safe)
+        with h5py.File(self.x_path, "r") as fx:
+            x = fx["x"][idx]  # (96, 96, 3), uint8
 
-    def __getitem__(self, idx: int) -> Tuple[torch.Tensor, torch.Tensor]:
-        # TODO: Implement data retrieval
-        # 1. Read data at idx
-        # 2. Convert to uint8 (for PIL compatibility if using transforms)
-        # 3. Apply transforms if they exist
-        # 4. Return tensor image and label (as long)
-        
-        raise NotImplementedError("Implement __getitem__ in PCAMDataset")
+        with h5py.File(self.y_path, "r") as fy:
+            y = fy["y"][idx]  # scalar
+
+        # Convert to torch
+        x = torch.from_numpy(x).float()
+
+        # Normalize to [0, 1]
+        x = x / 255.0
+        x = torch.clamp(x, 0.0, 1.0)
+
+        # Change shape to (C, H, W)
+        x = x.permute(2, 0, 1)
+
+        y = torch.tensor(y, dtype=torch.long).squeeze()
+
+
+        return x, y
+

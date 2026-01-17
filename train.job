@@ -1,0 +1,15 @@
+#!/bin/bash
+#SBATCH --job-name=pcam_train
+#SBATCH --partition=gpu_course
+#SBATCH --gres=gpu:1
+#SBATCH --time=00:30:00
+#SBATCH --output=train_%j.out
+
+module purge
+module load 2025
+module load Python/3.13.1-GCCcore-14.2.0
+
+source ~/venvs/mlops/bin/activate
+cd ~/MLOps_2026
+
+python experiments/train.py --config experiments/configs/train_config.yaml
