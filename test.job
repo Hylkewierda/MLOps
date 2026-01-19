@@ -1,0 +1,16 @@
+import torch
+import time
+
+print("First Batch Job - assignment 1")
+print(f"PyTorch v: {torch.__version__}")
+print(f"CUDA available: {torch.cuda.is_available()}")
+
+if torch.cuda.is_available():
+print(f"GPU Device: {torch.cuda.get_device_name(0)}")
+
+x = torch.randn(10, 10)
+y = torch.randn(10, 10)
+start = time.time()
+z = torch.matmul(x, y)
+elapsed = time.time() - start
+print(f"Matrix multiplication (10x10) took: {elapsed:.4f} seconds")
