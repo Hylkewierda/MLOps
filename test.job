@@ -12,6 +12,10 @@
 echo "Running on node: $(hostname)"
 echo " Job ID: $SLURM_JOB_ID"
 module load 2025
+module load Python/3.13.1-GCCcore-14.2.0
+source ~/venv/bin/activate
+python ~/MLOps/test_job.py
+echo " Job finished at: $(date)"
 
 import torch
 import time
